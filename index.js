@@ -37,7 +37,53 @@ app.get('/update-cobj', async (req, res) => {
     }
 });
 
-// TODO: ROUTE 3 - Create a new app.post route for the custom objects form to create or update your custom object data. Once executed, redirect the user to the homepage
+// TODO: ROUTE 3 - Create a new app.post route for the custom objects form to create or update your custom object data. Once executed, redirect the user to the homepage.
+
+app.post('/update-cobj', async (req, res) => {
+    const create = {
+        properties: {
+            "id": req.body.id,
+            "nombre": req.body.nombre,
+            "edad": req.body.edad
+        }
+    }
+
+    const headers = {
+        Authorization: `Bearer ${PRIVATE_APP_ACCESS}`,
+        'Content-Type': 'application/json'
+    };
+
+    const id = req.body.id;
+    const searchPet = `https://api.hubspot.com/crm/v3/objects/2-32936400/${id}?idProperty=id`
+    let updateId;
+    try {
+        const resp = await axios.get(searchPet, { headers });
+        const data = resp.data;
+        updateId = data.id;
+    } catch (error) {
+        console.error(error);
+    }
+
+    if (!updateId) {
+        const createNewPet = `https://api.hubapi.com/crm/v3/objects/2-32936400`;
+        try {
+            const response = await axios.post(createNewPet, create, { headers });
+            res.redirect('/');
+        } catch (err) {
+            res.redirect('/');
+            console.error(err);
+        }
+    } else {
+        const updatePet = `https://api.hubapi.com/crm/v3/objects/2-32936400/${updateId}`;
+        try {
+            const response = await axios.patch(updatePet, create, { headers });
+            res.redirect('/');
+        } catch (err) {
+            res.redirect('/');
+            console.error(err);
+        }
+    }
+});
 
 /** 
 * * This is sample code to give you a reference for how you should structure your calls. 
